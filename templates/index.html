@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Wildlife AI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -8,52 +10,143 @@
 
 <div class="container">
 
-    <h1>🐾 Smart Wildlife Monitoring System</h1>
+    <div class="hero">
 
-    <form method="POST" enctype="multipart/form-data">
+        <!-- LEFT -->
+        <div class="hero-left">
 
-        <input type="file" name="image" required>
+            <div class="badge">
+                <div class="badge-dot"></div>
+                AI Detection System Online
+            </div>
 
-        <button type="submit">
-            Detect Animals
-        </button>
+            <h1>
+                Smart <span>Wildlife</span><br>
+                Monitoring AI
+            </h1>
 
-    </form>
+            <p class="subtitle">
+                Upload wildlife images and let artificial intelligence detect,
+                classify, analyze, and monitor animals in real time.
+            </p>
 
-    {% if image_path %}
+            <form method="POST" enctype="multipart/form-data">
 
-        <div class="result-image">
-            <img src="/{{ image_path }}">
+                <div class="upload-box">
+
+                    <div class="upload-icon">🐾</div>
+
+                    <h2>Upload Wildlife Image</h2>
+
+                    <p>
+                        Supports JPG, JPEG, PNG
+                    </p>
+
+                    <label class="custom-upload" for="file-upload">
+                        ⬆ Choose Image
+                    </label>
+
+                    <input
+                        type="file"
+                        id="file-upload"
+                        name="image"
+                        accept="image/*"
+                        required
+                    >
+
+                    <button class="detect-btn" type="submit">
+                        🔍 Detect Animals
+                    </button>
+
+                </div>
+
+            </form>
+
+            <!-- STATS -->
+            <div class="stats">
+
+                <div class="stat-box">
+                    <h3>Total Detections</h3>
+                    <p>{{ detections|length }}</p>
+                </div>
+
+                <div class="stat-box">
+                    <h3>AI Accuracy</h3>
+                    <p>98%</p>
+                </div>
+
+                <div class="stat-box">
+                    <h3>Model</h3>
+                    <p>YOLOv8</p>
+                </div>
+
+            </div>
+
         </div>
 
-    {% endif %}
+        <!-- RIGHT -->
+        <div class="hero-right">
 
+            <h2 class="preview-title">
+                Detection Preview
+            </h2>
+
+            {% if image_path %}
+
+                <img
+                    src="/{{ image_path }}"
+                    class="preview-image"
+                >
+
+            {% else %}
+
+                <div class="empty-preview">
+                    Uploaded image preview appears here
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- DETECTION CARDS -->
     <div class="cards">
 
-    {% for item in detections %}
+        {% for item in detections %}
 
         <div class="card">
 
-            <h2>{{ item.name }}</h2>
+            <div class="card-top">
 
-            <p>
-                Confidence: {{ item.confidence }}%
-            </p>
+                <h2>{{ item.name }}</h2>
 
-            <p>
-                Scientific Name:
-                {{ item.scientific }}
-            </p>
+                <div class="confidence">
+                    {{ item.confidence }}%
+                </div>
 
-            <p>
-                Habitat:
-                {{ item.habitat }}
-            </p>
+            </div>
 
-            <p>
-                Conservation Status:
-                {{ item.status }}
-            </p>
+            <div class="info-row">
+                <div class="info-label">Scientific Name</div>
+                <div class="info-value">
+                    {{ item.scientific }}
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">Habitat</div>
+                <div class="info-value">
+                    {{ item.habitat }}
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">Conservation Status</div>
+                <div class="info-value">
+                    {{ item.status }}
+                </div>
+            </div>
 
             {% if item.status == 'Dangerous' %}
 
@@ -65,23 +158,16 @@
 
         </div>
 
-    {% endfor %}
+        {% endfor %}
 
     </div>
 
-    <div class="links">
+    <!-- QUICK LINKS -->
+    <div class="quick-links">
 
         <a href="/dashboard">
-            Open Dashboard
+            📊 Analytics Dashboard
         </a>
 
         <a href="/webcam">
-            Open Live Webcam
-        </a>
-
-    </div>
-
-</div>
-
-</body>
-</html>
+            🎥 Live Webcam 

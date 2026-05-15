@@ -251,7 +251,7 @@ def video_detection():
         path = os.path.join(VIDEO_FOLDER, file.filename)
 
         file.save(path)
-
+    
         return "Video uploaded successfully"
 
     return '''
