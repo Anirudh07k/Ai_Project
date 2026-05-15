@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Wildlife AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>🐾 Smart Wildlife Monitoring System</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <input type="file" name="image" required>
+
+        <button type="submit">
+            Detect Animals
+        </button>
+
+    </form>
+
+    {% if image_path %}
+
+        <div class="result-image">
+            <img src="/{{ image_path }}">
+        </div>
+
+    {% endif %}
+
+    <div class="cards">
+
+    {% for item in detections %}
+
+        <div class="card">
+
+            <h2>{{ item.name }}</h2>
+
+            <p>
+                Confidence: {{ item.confidence }}%
+            </p>
+
+            <p>
+                Scientific Name:
+                {{ item.scientific }}
+            </p>
+
+            <p>
+                Habitat:
+                {{ item.habitat }}
+            </p>
+
+            <p>
+                Conservation Status:
+                {{ item.status }}
+            </p>
+
+            {% if item.status == 'Dangerous' %}
+
+                <div class="alert">
+                    ⚠ Dangerous Animal Detected
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    {% endfor %}
+
+    </div>
+
+    <div class="links">
+
+        <a href="/dashboard">
+            Open Dashboard
+        </a>
+
+        <a href="/webcam">
+            Open Live Webcam
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

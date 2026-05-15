@@ -1,0 +1,53 @@
+.cards {
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: rgba(255,255,255,0.08);
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.card h2 {
+    color: white;
+    margin-bottom: 10px;
+}
+
+.card p {
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 8px;
+}
+
+.alert {
+    margin-top: 15px;
+    padding: 12px;
+    background: rgba(255,0,0,0.2);
+    border: 1px solid red;
+    border-radius: 12px;
+    color: white;
+}
+
+.result-image img {
+    width: 100%;
+    max-width: 700px;
+    border-radius: 20px;
+    margin-top: 30px;
+}
+
+.links {
+    margin-top: 40px;
+    display: flex;
+    gap: 20px;
+}
+
+.links a {
+    text-decoration: none;
+    color: white;
+    padding: 14px 20px;
+    background: linear-gradient(135deg,#7c3aed,#2563eb);
+    border-radius: 14px;
+}
