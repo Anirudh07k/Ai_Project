@@ -5,6 +5,7 @@ import cv2
 import os
 import sqlite3
 from datetime import datetime
+from collections import Counter
 from animal_info import animal_data
 
 app = Flask(__name__)
@@ -241,26 +242,134 @@ def video_feed():
 # VIDEO DETECTION
 # =========================
 
+def detect_video(video_path):
+
+    cap = cv2.VideoCapture(video_path)
+
+    if not cap.isOpened():
+        raise Exception("Could not open video file.")
+
+    # Video properties
+    fps        = cap.get(cv2.CAP_PROP_FPS) or 25
+    width      = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height     = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    # Output path
+    output_filename = "result_video.mp4"
+    output_path = os.path.join(RESULT_FOLDER, output_filename)
+
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    out    = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+
+    # Process every 3rd frame to keep it fast
+    FRAME_SKIP = 3
+
+    all_labels   = []
+    frame_index  = 0
+    frames_processed = 0
+
+    while True:
+
+        ret, frame = cap.read()
+
+        if not ret:
+            break
+
+        if frame_index % FRAME_SKIP == 0:
+
+            results  = model(frame, verbose=False)
+            result   = results[0]
+            annotated = result.plot()
+
+            boxes = result.boxes
+
+            for box in boxes:
+                cls_id     = int(box.cls[0])
+                confidence = float(box.conf[0])
+                label      = model.names[cls_id]
+                all_labels.append(label)
+
+                save_detection(
+                    label,
+                    round(confidence * 100, 2),
+                    output_path
+                )
+
+            frames_processed += 1
+
+        else:
+            annotated = frame
+
+        out.write(annotated)
+        frame_index += 1
+
+    cap.release()
+    out.release()
+
+    # Build summary
+    counts   = Counter(all_labels)
+    summary  = []
+
+    for label, count in counts.most_common():
+        info = animal_data.get(label.lower(), {})
+        summary.append({
+            "name":       label,
+            "count":      count,
+            "scientific": info.get("scientific", "Unknown"),
+            "habitat":    info.get("habitat",    "Unknown"),
+            "status":     info.get("status",     "Unknown"),
+        })
+
+    duration_seconds = round(total_frames / fps, 1) if fps else 0
+
+    stats = {
+        "total_detections": len(all_labels),
+        "unique_animals":   len(counts),
+        "frames_processed": frames_processed,
+        "duration":         duration_seconds,
+    }
+
+    return summary, stats, output_filename
+
+
 @app.route('/video', methods=['GET', 'POST'])
 def video_detection():
 
+    summary  = []
+    stats    = {}
+    error    = None
+    output_filename = None
+
     if request.method == 'POST':
 
-        file = request.files['video']
+        file = request.files.get('video')
 
-        path = os.path.join(VIDEO_FOLDER, file.filename)
+        if not file or file.filename == '':
+            error = "No video file selected."
 
-        file.save(path)
-    
-        return "Video uploaded successfully"
+        else:
+            filename = file.filename.lower()
 
-    return '''
-    <h1>Upload Video</h1>
-    <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="video">
-        <button type="submit">Upload</button>
-    </form>
-    '''
+            if not filename.endswith(('.mp4', '.avi', '.mov', '.mkv')):
+                error = "Unsupported format. Please upload MP4, AVI, MOV, or MKV."
+
+            else:
+                save_path = os.path.join(VIDEO_FOLDER, filename)
+                file.save(save_path)
+
+                try:
+                    summary, stats, output_filename = detect_video(save_path)
+                except Exception as e:
+                    error = str(e)
+
+    return render_template(
+        "video.html",
+        summary=summary,
+        stats=stats,
+        output_filename=output_filename,
+        error=error,
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)
